@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 
 // import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./IEdge.sol";
 import "./EdgeBase.sol";
-import "./IEdgeHub.sol";
+import "./EdgeHub.sol";
 
 /**
  * @title Edge allows for interaction with EdgeHub
@@ -19,13 +19,14 @@ import "./IEdgeHub.sol";
  * @dev sanity checking on basic edge hygeine is done in the EdgeHub
  */
 
-contract Edge is IEdge {
+abstract contract Edge is EdgeBase, IEdge {
 
-    EdgeBase _EdgeBase;
+    EdgeHub public _EdgeHub;
 
     constructor(address hub) EdgeBase(hub) {
         // todo: sanity check EdgeBase(HUB) is valid
-        _EdgeBase = EdgeBase(HUB);
+        // _EdgeHub = IEdgeHub(hub);
+        _EdgeHub = EdgeHub(hub);
     }
 
     function link(
@@ -33,10 +34,10 @@ contract Edge is IEdge {
         NFT memory targetToken,
         uint256 edgeId,
         bytes memory data
-    ) external {
-        _beforeLink(sourceToken, targetToken, tokenId, data);
-        _EdgeBase.link(sourceToken, targetToken, edgeId, data);
-        _afterLink(sourceToken, targetToken, tokenId, data);
+    ) public {
+        _beforeLink(sourceToken, targetToken, edgeId, data);
+        _EdgeHub.link(sourceToken, targetToken, edgeId, data);
+        _afterLink(sourceToken, targetToken, edgeId, data);
     }
     
     function unlink(
@@ -44,38 +45,38 @@ contract Edge is IEdge {
         NFT memory targetToken,
         uint256 edgeId,
         bytes memory data
-    ) external {
-        _beforeUnlink(sourceToken, targetToken, tokenId, data);
-        _EdgeBase.unlink(sourceToken, targetToken, edgeId, data);
-        _afterUnlink(sourceToken, targetToken, tokenId, data);
+    ) public {
+        _beforeUnlink(sourceToken, targetToken, edgeId, data);
+        _EdgeHub.unlink(sourceToken, targetToken, edgeId, data);
+        _afterUnlink(sourceToken, targetToken, edgeId, data);
     }
 
     function _beforeLink(
         NFT memory sourceToken,
         NFT memory targetToken,
         uint256 edgeId,
-        bytes data
+        bytes memory data
     ) internal virtual {}
 
     function _afterLink(
         NFT memory sourceToken,
         NFT memory targetToken,
         uint256 edgeId,
-        bytes data 
+        bytes memory data 
     ) internal virtual {}
 
     function _beforeUnlink(
         NFT memory sourceToken,
         NFT memory targetToken,
         uint256 edgeId,
-        bytes data
+        bytes memory data
     ) internal virtual {}
 
     function _afterUnlink(
         NFT memory sourceToken,
         NFT memory targetToken,
         uint256 edgeId,
-        bytes data 
+        bytes memory data 
     ) internal virtual {}
 
 }

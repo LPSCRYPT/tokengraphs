@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 
 // import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -8,13 +8,9 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 // import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 // import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 // import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "./INFT.sol";
 
-interface IEdge {
-
-    struct NFT {
-        address tokenAddress;
-        uint256 tokenId;
-    }
+interface IEdge is INFT {
 
     function link(
         NFT memory sourceToken,

@@ -3,20 +3,21 @@
 // also checks for (non)existence before (un)linking
 
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "./IEdgeHub.sol";
 
-contract EdgeHub is IEdgeHub, ERC165 {
+abstract contract EdgeHub is IEdgeHub, ERC165 {
 
     // EdgeAddress => NFT_Source => NFT_Target => EdgeID => Exists?
 
-    mapping(address => mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => bool))))) edge;
+    mapping(address => mapping(address => mapping(uint256 => mapping(address => mapping(uint256 =>  mapping(uint256 => bool)))))) edge;
 
     // EdgeAddress => NFT_Source => NFT_Target => EdgeID => Data
 
-    mapping(address => mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => bytes))))) edgeData;
+    mapping(address => mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => mapping(uint256 => bytes)))))) edgeData;
 
     modifier notZeroAddress(address _token) {
         require(
@@ -26,17 +27,18 @@ contract EdgeHub is IEdgeHub, ERC165 {
         _;
     }
 
-    modifier tokenExists(address _token) {
+    modifier tokenExists(NFT calldata _token) {
         require(
             // change token checking logic for erc20 & erc1155 
             _isERC721AndExists(_token),
             "token not ERC721 token or does not exist"
         );
+        _;
     }
 
     function link(
-        NFT memory sourceToken,
-        NFT memory targetToken,
+        NFT calldata sourceToken,
+        NFT calldata targetToken,
         uint256 edgeId,
         bytes memory data
     ) external tokenExists(sourceToken) tokenExists(targetToken) notZeroAddress(sourceToken.tokenAddress) notZeroAddress(targetToken.tokenAddress) {
@@ -48,13 +50,13 @@ contract EdgeHub is IEdgeHub, ERC165 {
             msg.sender != tx.origin,
             "Caller must be an external contract"
         );
-        _addLink(sourceToken, targetToken, linkId, data);
-        emit Linked(tx.origin, sourceToken, targetToken, linkId, data);
+        _addLink(sourceToken, targetToken, edgeId, data);
+        emit Linked(tx.origin, sourceToken, targetToken, edgeId, data);
     }
 
     function unlink(
-        NFT memory sourceToken,
-        NFT memory targetToken,
+        NFT calldata sourceToken,
+        NFT calldata targetToken,
         uint256 edgeId,
         bytes memory data
     ) external tokenExists(sourceToken) tokenExists(targetToken) notZeroAddress(sourceToken.tokenAddress) notZeroAddress(targetToken.tokenAddress) {
@@ -70,11 +72,11 @@ contract EdgeHub is IEdgeHub, ERC165 {
         emit Unlinked(tx.origin, sourceToken, targetToken, edgeId, data);
     }
 
-    function edgeExists(address edgeType, NFT sourceToken, NFT targetToken, uint256 edgeId) public view returns (bool) {
+    function edgeExists(address edgeType, NFT calldata sourceToken, NFT calldata targetToken, uint256 edgeId) public view returns (bool) {
         return edge[edgeType][sourceToken.tokenAddress][sourceToken.tokenId][targetToken.tokenAddress][targetToken.tokenId][edgeId];
     }
 
-    function getEdgeData(address edgeType, NFT sourceToken, NFT targetToken, uint256 edgeId) public view returns (bytes) {
+    function getEdgeData(address edgeType, NFT calldata sourceToken, NFT calldata targetToken, uint256 edgeId) public view returns (bytes memory) {
         require(edgeExists(edgeType, sourceToken, targetToken, edgeId), "Edge does not exist.");
         return edgeData[edgeType][sourceToken.tokenAddress][sourceToken.tokenId][targetToken.tokenAddress][targetToken.tokenId][edgeId];
     }
@@ -83,7 +85,7 @@ contract EdgeHub is IEdgeHub, ERC165 {
         NFT memory sourceToken,
         NFT memory targetToken,
         uint256 edgeId,
-        bytes data
+        bytes memory data
     ) private {
         // msg.sender should always refer to the calling contract which implements the IEdge interface
         edge[msg.sender][sourceToken.tokenAddress][sourceToken.tokenId][targetToken.tokenAddress][targetToken.tokenId][edgeId] = true;
