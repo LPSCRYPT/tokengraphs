@@ -19,7 +19,7 @@ import "./IEdgeHub.sol";
  * @dev sanity checking on basic edge hygeine is done in the EdgeHub
  */
 
-contract Edge is EdgeBase, IEdge {
+contract Edge is IEdge {
 
     EdgeBase _EdgeBase;
 
