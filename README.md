@@ -56,6 +56,6 @@ The true magic happens in the `_before...` and `_after...` virtual functions. He
 
 Node types don't have to just be of a token type. A node can be any well-defined type of composite solidity variables. An edge contract can keep a record of edges between any two arbitrary node types A and B by storing their `A -> B -> Link` association as encoded bytes of their values: ie. `Bytes(A) -> Bytes(B)-> Link`. A node schema can be referenced for easy interpreting and decoding of node types, regardless of their structure.
 
-## First Implementation
+## First Implementation: NFT Commentaries
 
 Our first usecase of edgy tokens as it relates to crypto art and SuperRare is providing onchain commentary. We can leverage an onchain edge database to create associations between 'commentaries' and particular tokens, as well as defining logic for gatekeeping how commentaries can be produced (ie. only by collectors, artists, et.c.). We feel that this is a strong fit for SuperRare's development goals as the product has multiple open ended usecases that themselves can serve to further the creative expression and associativity of content in the cryptoart space.
